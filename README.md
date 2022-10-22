@@ -2,7 +2,7 @@
 
 # infchan
 
-Exposes an a generic, unbounded channel.
+Exposes a generic, unbounded channel.
 
 ## Usage Example
 
