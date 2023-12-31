@@ -59,5 +59,4 @@ func (c *DefaultChannel[T]) process() {
 	}
 
 	close(c.out)
-	c.out = nil
 }
