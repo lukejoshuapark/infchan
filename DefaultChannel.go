@@ -2,18 +2,20 @@ package infchan
 
 // DefaultChannel is the default implementation of an unbounded channel.
 type DefaultChannel[T any] struct {
-	in  chan T
-	out chan T
-	buf []T
+	in     chan T
+	out    chan T
+	closed bool
+	buf    []T
 }
 
 var _ Channel[struct{}] = &DefaultChannel[struct{}]{}
 
 func NewDefaultChannel[T any]() *DefaultChannel[T] {
 	c := &DefaultChannel[T]{
-		in:  make(chan T),
-		out: make(chan T),
-		buf: []T{},
+		in:     make(chan T),
+		out:    make(chan T),
+		closed: false,
+		buf:    []T{},
 	}
 
 	go c.process()
@@ -37,7 +39,7 @@ func (c *DefaultChannel[T]) Len() int {
 }
 
 func (c *DefaultChannel[T]) process() {
-	for c.in != nil || len(c.buf) > 0 {
+	for !c.closed || len(c.buf) > 0 {
 		var outValue T
 		var outChan chan<- T
 		if len(c.buf) > 0 {
@@ -48,7 +50,7 @@ func (c *DefaultChannel[T]) process() {
 		select {
 		case inValue, ok := <-c.in:
 			if !ok {
-				c.in = nil
+				c.closed = true
 				continue
 			}
 			c.buf = append(c.buf, inValue)
